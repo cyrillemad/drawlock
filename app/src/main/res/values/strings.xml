@@ -5,6 +5,7 @@
     <string name="mirror">Зеркало</string>
     <string name="grayscale">Ч/Б</string>
     <string name="contrast">Контраст</string>
+    <string name="angle">Угол: %1$d°</string>
     <string name="reset">Сброс</string>
     <string name="lock">LOCK</string>
     <string name="unlock_hint">Чтобы выйти, держите «громкость −» 2 секунды</string>

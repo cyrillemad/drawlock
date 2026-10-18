@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 
 private const val UNLOCK_HINT_MILLIS = 3000L
 
@@ -75,9 +78,10 @@ private fun TracedImage(vm: TracingViewModel, image: ImageBitmap) {
         Modifier // Touches through the paper must not move the image.
     } else {
         Modifier.pointerInput(Unit) {
-            detectTransformGestures { centroid, pan, zoom, rotation ->
+            // Finger twist is ignored on purpose: the angle is set precisely in the toolbar.
+            detectTransformGestures { centroid, pan, zoom, _ ->
                 val center = Offset(size.width / 2f, size.height / 2f)
-                vm.transform = vm.transform.applyGesture(center, centroid, pan, zoom, rotation)
+                vm.transform = vm.transform.applyGesture(center, centroid, pan, zoom)
             }
         }
     }
@@ -116,6 +120,7 @@ private fun Toolbar(
             .navigationBarsPadding()
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
+        if (vm.image != null) AngleControls(vm)
         if (vm.grayscale) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.contrast), color = Color.White)
@@ -147,6 +152,31 @@ private fun Toolbar(
             Button(onClick = onLock, enabled = vm.image != null) { Text(stringResource(R.string.lock)) }
         }
     }
+}
+
+/** Whole-degree angle: fine steps with buttons, coarse with the slider. */
+@Composable
+private fun AngleControls(vm: TracingViewModel) {
+    val angle = vm.transform.rotation
+    val setAngle = { degrees: Float -> vm.transform = vm.transform.withRotation(degrees) }
+    val compact = PaddingValues(horizontal = 10.dp)
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = stringResource(R.string.angle, angle.roundToInt()),
+            color = Color.White,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = { setAngle(angle - 1f) }, contentPadding = compact) { Text("−1°") }
+        TextButton(onClick = { setAngle(angle + 1f) }, contentPadding = compact) { Text("+1°") }
+        TextButton(onClick = { setAngle(angle + 90f) }, contentPadding = compact) { Text("+90°") }
+        TextButton(onClick = { setAngle(0f) }, contentPadding = compact) { Text("0°") }
+    }
+    Slider(
+        value = angle,
+        onValueChange = { setAngle(it.roundToInt().toFloat()) },
+        valueRange = -180f..180f,
+    )
 }
 
 @Composable

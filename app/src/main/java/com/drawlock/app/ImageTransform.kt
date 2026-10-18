@@ -19,21 +19,24 @@ data class ImageTransform(
         center + offset + local.rotateBy(rotation) * scale
 
     /**
-     * Applies one step of a multi-touch gesture so that the content point under [centroid]
-     * stays under the fingers: it ends up at `centroid + pan`.
+     * Applies one step of a pan/zoom gesture so that the content point under [centroid]
+     * stays under the fingers: it ends up at `centroid + pan`. The angle is not touched:
+     * it is set precisely with [withRotation] instead.
      */
-    fun applyGesture(
-        center: Offset,
-        centroid: Offset,
-        pan: Offset,
-        zoom: Float,
-        rotationDelta: Float,
-    ): ImageTransform {
+    fun applyGesture(center: Offset, centroid: Offset, pan: Offset, zoom: Float): ImageTransform {
         val newScale = (scale * zoom).coerceIn(MIN_SCALE, MAX_SCALE)
         val effectiveZoom = newScale / scale
         val fromImageCenter = centroid - center - offset
-        val newOffset = centroid - center + pan - fromImageCenter.rotateBy(rotationDelta) * effectiveZoom
-        return ImageTransform(newOffset, newScale, rotation + rotationDelta)
+        val newOffset = centroid - center + pan - fromImageCenter * effectiveZoom
+        return copy(offset = newOffset, scale = newScale)
+    }
+
+    /** Rotates around the image center; the angle is wrapped into -180..180. */
+    fun withRotation(degrees: Float): ImageTransform {
+        var wrapped = degrees % 360f
+        if (wrapped > 180f) wrapped -= 360f
+        if (wrapped < -180f) wrapped += 360f
+        return copy(rotation = wrapped)
     }
 
     companion object {
