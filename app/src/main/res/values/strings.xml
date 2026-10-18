@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">DrawLock</string>
+    <string name="pick_image">Выбрать</string>
+    <string name="pick_image_hint">Выберите картинку для обводки</string>
+    <string name="mirror">Зеркало</string>
+    <string name="grayscale">Ч/Б</string>
+    <string name="contrast">Контраст</string>
+    <string name="reset">Сброс</string>
+    <string name="lock">LOCK</string>
+    <string name="unlock_hint">Чтобы выйти, держите «громкость −» 2 секунды</string>
+    <string name="load_failed">Не удалось открыть картинку</string>
+</resources>
